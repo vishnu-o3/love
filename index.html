@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Eternal Story</title>
+    <style>
+        /* --- FONTS --- */
+        @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Sacramento&family=Cormorant+Garamond:ital,wght@1,600&display=swap');
+
+        :root {
+            --red-thread: #d90429;
+            --paper: #fff0f5; 
+            --ink: #5e0d22;   
+            --gold: #d4af37;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            /* Soft Romantic Gradient */
+            background: linear-gradient(120deg, #fccb90 0%, #d57eeb 100%);
+            font-family: 'Sacramento', cursive; 
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- FALLING EMOJIS --- */
+        #hearts-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* --- THE RED STRING --- */
+        .thread-container {
+            position: fixed; left: 50px; top: 0; bottom: 0; width: 4px;
+            z-index: 10;
+        }
+        .thread-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 0%;
+            background: var(--red-thread);
+            box-shadow: 0 0 10px rgba(217, 4, 41, 0.5);
+            transition: height 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            border-radius: 4px;
+        }
+        .heart-knot {
+            position: absolute; left: -13px; top: 0%;
+            font-size: 24px; color: var(--red-thread);
+            transition: top 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2));
+        }
+
+        /* --- INTRO SCREEN --- */
+        #intro {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 245, 248, 0.98);
+            z-index: 20;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: opacity 1.5s;
+            padding: 20px;
+        }
+
+        .title-fancy {
+            font-family: 'Great Vibes', cursive;
+            font-size: 5rem;
+            color: var(--red-thread);
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .intro-poem {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 1.8rem;
+            text-align: center;
+            max-width: 700px;
+            line-height: 1.8;
+            color: #4a0d18;
+            margin-bottom: 50px;
+            font-weight: 600;
+        }
+
+        .btn-love {
+            padding: 15px 50px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-style: italic;
+            font-weight: bold;
+            background: transparent;
+            border: 2px solid var(--red-thread);
+            color: var(--red-thread);
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(217, 4, 41, 0.1);
+            transition: all 0.3s;
+        }
+        .btn-love:hover {
+            background: var(--red-thread);
+            color: white;
+            box-shadow: 0 15px 30px rgba(217, 4, 41, 0.3);
+        }
+
+        /* --- MAIN CARD STAGE --- */
+        #stage {
+            position: relative;
+            z-index: 5;
+            width: 90%; max-width: 600px;
+            perspective: 1000px;
+        }
+
+        .paper-card {
+            background: #fff;
+            padding: 50px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(94, 13, 34, 0.2);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            opacity: 0;
+            transform: translateY(50px) rotateX(5deg);
+            display: none;
+            transition: all 0.8s ease-out;
+            position: relative;
+        }
+        
+        /* Paper texture */
+        .paper-card::before {
+            content: ''; position: absolute; top:0; left:0; width:100%; height:100%;
+            background-image: linear-gradient(#eee .1em, transparent .1em);
+            background-size: 100% 1.5em;
+            opacity: 0.1; pointer-events: none; border-radius: 15px;
+        }
+
+        .paper-card.active { display: block; opacity: 1; transform: translateY(0); }
+        .paper-card.exit { opacity: 0; transform: translateY(-50px) scale(0.95); pointer-events: none; }
+
+        .day-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4rem;
+            color: var(--red-thread);
+            margin-bottom: 15px;
+        }
+
+        .poetic-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem;
+            font-style: italic;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .emoji-interaction {
+            font-size: 4.5rem;
+            cursor: pointer;
+            transition: transform 0.4s;
+            display: inline-block;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+        }
+        .emoji-interaction:hover { transform: scale(1.2); }
+        .emoji-interaction.clicked { animation: heartbeat 0.6s; pointer-events: none; opacity: 0.7; }
+
+        .next-btn {
+            display: block; margin: 20px auto 0;
+            background: transparent; border: none;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem; font-style: italic; font-weight: bold;
+            color: #999; cursor: pointer;
+            opacity: 0; transition: 0.5s;
+        }
+        .next-btn.show { opacity: 1; color: var(--red-thread); transform: translateY(-5px); }
+
+        /* --- FINAL LETTER --- */
+        #final-letter {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(40, 10, 20, 0.9);
+            z-index: 100;
+            display: none; align-items: center; justify-content: center;
+        }
+        
+        .letter-scroll {
+            width: 85%; height: 80%;
+            background: #fffcf0;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 0 40px rgba(255, 200, 200, 0.3);
+            overflow-y: auto;
+        }
+
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes heartbeat { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
+        @media (max-width: 768px) {
+            .title-fancy { font-size: 3.5rem; }
+            .intro-poem { font-size: 1.4rem; }
+            .paper-card { padding: 30px 20px; }
+            .thread-container { left: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="hearts-canvas"></canvas>
+    
+    <div class="thread-container">
+        <div class="thread-line" id="thread"></div>
+        <div class="heart-knot" id="knot">❤️</div>
+    </div>
+
+    <div id="intro">
+        <h1 class="title-fancy">Destiny & Time</h1>
+        <p class="intro-poem">
+            "The universe is vast, and time is infinite,<br>
+            yet in this chaotic expanse,<br>
+            my soul found its quiet home in yours.<br><br>
+            You are not just a love found;<br>
+            you are a destiny recognized.<br>
+            Of all the souls across eternity,<br>
+            my heart chose you."
+        </p>
+        <button class="btn-love" onclick="startJourney()">Begin Our Story</button>
+    </div>
+
+    <div id="stage">
+        </div>
+
+    <div id="final-letter">
+        <div class="letter-scroll">
+            <h1 style="font-family:'Great Vibes'; font-size:3.5rem; text-align:center; color:#d90429;">My Forever Love</h1>
+            <div id="letter-content" style="font-family:'Cormorant Garamond'; font-style:italic; font-size:1.8rem; line-height:1.6; margin-top:30px; color:#333;"></div>
+        </div>
+    </div>
+
+    <script>
+        /* --- CONTENT CONFIGURATION --- */
+        const story = [
+            {
+                day: "Rose Day",
+                emoji: "🌹",
+                text: "Before you, my world was black and white. Like a rose waiting for the dawn, my heart was sleeping. You are the sunlight that woke me up to color."
+            },
+            {
+                day: "Propose Day",
+                emoji: "💍",
+                text: "I do not wish for a perfect life, but a shared one. Today, I ask you not just to be my Valentine, but to be my partner in this beautiful chaos."
+            },
+            {
+                day: "Chocolate Day",
+                emoji: "🍫",
+                text: "Life brings bitterness, but your love is the antidote. You are the sweetness in my morning coffee and the comfort in my quiet nights."
+            },
+            {
+                day: "Teddy Day",
+                emoji: "🧸",
+                text: "I promise to be your shelter. Soft enough to wipe your tears, strong enough to handle your fears. I am your safe space, always."
+            },
+            {
+                day: "Promise Day",
+                emoji: "🤞",
+                text: "I vow to choose you. Even when we are old and gray, I will look at you and still see the greatest gift life ever gave me."
+            },
+            {
+                day: "Hug Day",
+                emoji: "🫂",
+                text: "In your arms, the world stops spinning. Distance is just a word; our connection is the only truth I know."
+            },
+            {
+                day: "Kiss Day",
+                emoji: "💞", 
+                text: "More than a touch, this is a seal upon our souls. Two hearts beating as one rhythm. Unlock our forever."
+            }
+        ];
+
+        /* --- LOGIC --- */
+        let step = 0;
+        const thread = document.getElementById('thread');
+        const knot = document.getElementById('knot');
+
+        function startJourney() {
+            const intro = document.getElementById('intro');
+            intro.style.opacity = 0;
+            setTimeout(() => intro.style.display = 'none', 1500);
+
+            thread.style.height = "10%";
+            knot.style.top = "10%";
+
+            setTimeout(() => renderCard(0), 1000);
+        }
+
+        function renderCard(index) {
+            const stage = document.getElementById('stage');
+            
+            const pct = ((index + 1) / story.length) * 100;
+            thread.style.height = pct + "%";
+            knot.style.top = pct + "%";
+
+            const card = document.createElement('div');
+            card.className = 'paper-card active';
+            card.innerHTML = `
+                <h1 class="day-title">${story[index].day}</h1>
+                <p class="poetic-text">${story[index].text}</p>
+                <div class="emoji-interaction" onclick="interact(this)">${story[index].emoji}</div>
+                <button class="next-btn" onclick="next(this)">Follow the Thread &darr;</button>
+            `;
+            stage.appendChild(card);
+        }
+
+        function interact(btn) {
+            if(btn.classList.contains('clicked')) return;
+            btn.classList.add('clicked');
+            createSparkles(btn.getBoundingClientRect());
+            btn.nextElementSibling.classList.add('show');
+        }
+
+        function next(btn) {
+            const card = btn.parentNode;
+            card.classList.remove('active');
+            card.classList.add('exit');
+
+            setTimeout(() => {
+                card.remove();
+                step++;
+                if (step < story.length) {
+                    renderCard(step);
+                } else {
+                    showFinalLetter();
+                }
+            }, 800);
+        }
+
+        function showFinalLetter() {
+            const overlay = document.getElementById('final-letter');
+            overlay.style.display = 'flex';
+            
+            const content = document.getElementById('letter-content');
+            const text = `
+                If you are reading this, you have followed the red string all the way to my heart.<br><br>
+                Every step of this journey, every word written on these cards, is a testament to how much I adore you. 
+                You are not just a part of my life; you are the reason my life has color.<br><br>
+                Fate may have brought us together, but love is the choice I make every single day to stay. 
+                Thank you for being my Valentine, my partner, and my best friend.<br><br>
+                Yours, for eternity,<br>
+                <span style="font-family:'Great Vibes'; font-size:3rem; color:#d90429;">[Your Name]</span>
+            `;
+            content.innerHTML = text;
+        }
+
+        /* --- FALLING HEARTS ANIMATION --- */
+        const canvas = document.getElementById('hearts-canvas');
+        const ctx = canvas.getContext('2d');
+        let hearts = [];
+        const heartEmojis = ['❤️', '💖', '💕', '🥰', '🌹', '💌'];
+
+        function initHearts() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for(let i=0; i<30; i++) hearts.push(new Heart());
+            animateHearts();
+        }
+
+        class Heart {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.size = Math.random() * 20 + 15;
+                this.speed = Math.random() * 2 + 0.5;
+                this.emoji = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+                this.swing = Math.random() * 3; 
+                this.swingStep = Math.random() * 0.05;
+                this.angle = 0;
+            }
+            update() {
+                this.y += this.speed;
+                this.angle += this.swingStep;
+                this.x += Math.sin(this.angle) * 1; 
+
+                if(this.y > canvas.height) {
+                    this.y = -50;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.font = this.size + 'px Arial';
+                ctx.fillText(this.emoji, this.x, this.y);
+            }
+        }
+
+        function animateHearts() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            hearts.forEach(h => { h.update(); h.draw(); });
+            requestAnimationFrame(animateHearts);
+        }
+
+        function createSparkles(rect) {
+            for(let i=0; i<15; i++) {
+                const s = document.createElement('div');
+                s.innerHTML = "💖";
+                s.style.position = 'fixed'; 
+                s.style.left = rect.left + rect.width/2 + 'px';
+                s.style.top = rect.top + rect.height/2 + 'px';
+                s.style.fontSize = Math.random()*20 + 'px';
+                s.style.pointerEvents = 'none';
+                s.style.transition = 'all 0.8s';
+                document.body.appendChild(s);
+                setTimeout(() => {
+                    s.style.transform = `translate(${(Math.random()-0.5)*100}px, ${(Math.random()-0.5)*100}px)`;
+                    s.style.opacity = 0;
+                }, 10);
+                setTimeout(()=>s.remove(), 800);
+            }
+        }
+
+        window.onload = initHearts;
+        window.onresize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+
+    </script>
+</body>
+</html>
